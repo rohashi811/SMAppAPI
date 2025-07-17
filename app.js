@@ -8,7 +8,7 @@ var logger = require('morgan');
 const routes = require('./routes');
 
 var app = express();
-
+app.use(express.json());
 app.use('/api/v0', routes);
 
 app.use(logger('dev'));

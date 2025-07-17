@@ -2,8 +2,8 @@ const  { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Group extends Model {
     static associate(models) {
-        Group.hasMany(models.Student, { foreignKey: 'group_id', as: 'students' });
-        models.Student.belongsTo(Group, { foreignKey: 'group_id', as: 'group' });
+        Group.hasMany(models.Student, { foreignKey: 'group_id' });
+        models.Student.belongsTo(Group, { foreignKey: 'group_id' });
     }
   }
   Group.init(

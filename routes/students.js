@@ -20,10 +20,10 @@ router.get('/:id', async(req, res, next) => {
         const { id } = req.params;
         const student = await Student.findByPk(id, {
             include: [
-                { model: School,        as: 'school'  },
-                { model: Agency,        as: 'agency'  },
-                { model: StudentDetail, as: 'detail'  },
-                { model: Group,         as: 'groups', through: { attributes: [] } }
+                { model: School  },
+                { model: Agency  },
+                { model: StudentDetail  },
+                { model: Group }
             ]
         });
 
@@ -115,9 +115,10 @@ router.post('/', async(req, res, next) => {
             note: note ?? null,
         }, { returning: true });
 
-        const created = await Student.findByPk(newStudent.id, {
-            include: [{ model: StudentDetail, as: 'detail' }]
+        const created = await Student.findByPk(student.id, {
+            include: [{ model: StudentDetail }]
         });
+        res.json(created);
     } catch (err) {
         next(err);
     }
@@ -128,7 +129,7 @@ router.put('/:id', async(req, res, next) => {
         const { id } = req.params;
         const { 
             firstName, lastName, arrivalDate, leavingDate, gender, schoolId, agencyId,
-            duration, jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note, groupId
+            jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note, groupId
         } = req.body; 
 
         const student = await Student.findByPk(id);
@@ -136,11 +137,11 @@ router.put('/:id', async(req, res, next) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        await student.update({ first_name, last_name, arrival_date, leaving_date, gender, agency_id, school_id });
+        await student.update({ firstName, lastName, arrivalDate, leavingDate, gender, agencyId, schoolId, groupId });
 
         const existingDetail = await StudentDetail.findOne({ where: { student_id: id } });
         if (existingDetail) {
-            await existingDetail.update(detail);
+            await existingDetail.update({ jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note });
         } else {
             await StudentDetail.create({
                 student_id: student.id,
@@ -161,7 +162,7 @@ router.put('/:id', async(req, res, next) => {
         }
 
         const updated = await Student.findByPk(id, {
-            include: [{ model: StudentDetail, as: 'detail' }]
+            include: [{ model: StudentDetail }]
         });
         res.json(updated);
 
