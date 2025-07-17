@@ -6,7 +6,7 @@ const {
     Student, StudentDetail
 } = require('../sequelize/models');
 
-router.get('/student', async(req, res, next) => {
+router.get('/', async(req, res, next) => {
     try {
         const students = await Student.findAll();
         res.json(students);
@@ -15,7 +15,7 @@ router.get('/student', async(req, res, next) => {
     }
 });
 
-router.get('/student/id', async(req, res, next) => {
+router.get('/:id', async(req, res, next) => {
     try {
         const { id } = req.params;
         const student = await Student.findByPk(id, {
@@ -80,14 +80,109 @@ router.get('/student/id', async(req, res, next) => {
     }
 });
 
-router.post('/student', async(req, res, next) => {
+router.post('/', async(req, res, next) => {
+    try {
+        const { 
+            firstName, lastName, arrivalDate, leavingDate, gender, schoolId, agencyId,
+            duration, jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note, groupId
+        } = req.body;  
+        
+        const student = await Student.create({
+            first_name: firstName,
+            last_name: lastName,
+            arrival_date: arrivalDate,
+            leaving_date: leavingDate ?? null,
+            gender: gender,
+            school_id: schoolId ?? null,
+            agency_id: agencyId ?? null,
+            group_id: groupId ?? null,
+        }, { returning: true });
 
+        await StudentDetail.create({
+            student_id: student.id,
+            jp_name: jpName ?? null,
+            date_of_birth: dateOfBirth ?? null,
+            phone_number: phone ?? null,
+            email: email ?? null,
+            flight_number: flight ?? null,
+            arrival_time: arrivalTime ?? null,
+            visa: visa ?? null,
+            allegies: allegies ?? null,
+            smoke: smoke,
+            pet: pet,
+            kid: kid,
+            meal: meal ?? null,
+            note: note ?? null,
+        }, { returning: true });
+
+        const created = await Student.findByPk(newStudent.id, {
+            include: [{ model: StudentDetail, as: 'detail' }]
+        });
+    } catch (err) {
+        next(err);
+    }
 });
 
-router.put('/student/id', async(req, res, next) => {
+router.put('/:id', async(req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { 
+            firstName, lastName, arrivalDate, leavingDate, gender, schoolId, agencyId,
+            duration, jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note, groupId
+        } = req.body; 
 
+        const student = await Student.findByPk(id);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        await student.update({ first_name, last_name, arrival_date, leaving_date, gender, agency_id, school_id });
+
+        const existingDetail = await StudentDetail.findOne({ where: { student_id: id } });
+        if (existingDetail) {
+            await existingDetail.update(detail);
+        } else {
+            await StudentDetail.create({
+                student_id: student.id,
+                jp_name: jpName ?? null,
+                date_of_birth: dateOfBirth ?? null,
+                phone_number: phone ?? null,
+                email: email ?? null,
+                flight_number: flight ?? null,
+                arrival_time: arrivalTime ?? null,
+                visa: visa ?? null,
+                allegies: allegies ?? null,
+                smoke: smoke,
+                pet: pet,
+                kid: kid,
+                meal: meal ?? null,
+                note: note ?? null,
+            }, { returning: true });
+        }
+
+        const updated = await Student.findByPk(id, {
+            include: [{ model: StudentDetail, as: 'detail' }]
+        });
+        res.json(updated);
+
+    } catch (err) {
+        next(err);
+    } 
 });
 
-router.delete('/student/id', async(req, res, next) => {
+router.delete('/:id', async(req, res, next) => {
+    try {
+        const { id } = req.params;
+        const student = await Student.findByPk(id);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
 
+        await student.destroy();
+        res.status(204).json({ message: 'Student deleted successfully' }).end();
+    } catch (err) {
+        next(err);
+    }
 });
+
+module.exports = router;
