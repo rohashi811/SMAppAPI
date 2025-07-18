@@ -36,7 +36,8 @@ module.exports = (sequelize, DataTypes) => {
         get() {
           const arrival = this.getDataValue('arrival_date');
           const leaving = this.getDataValue('leaving_date');
-          if(!leaving) return null;
+          if(!arrival || !leaving) return null;
+          if (new Date(leaving) < new Date(arrival)) return null; // Ensure leaving date is after arrival date
           return Math.floor((new Date(leaving) - new Date(arrival)) / (1000 * 60 * 60 * 24));
         }
       },
@@ -51,7 +52,11 @@ module.exports = (sequelize, DataTypes) => {
       school_id: {
         type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,
-      }
+      },
+      group_id: {
+        type: DataTypes.INTEGER.UNSIGNED,
+        allowNull: true,  
+      },   
     },
     {
       sequelize,

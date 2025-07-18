@@ -140,7 +140,21 @@ router.put('/:id', async(req, res, next) => {
 
         const existingDetail = await StudentDetail.findOne({ where: { student_id: id } });
         if (existingDetail) {
-            await existingDetail.update({ jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note });
+            await existingDetail.update({ 
+                jpName: jpName ?? null, 
+                dateOfBirth: dateOfBirth ?? null, 
+                phone: phone ?? null, 
+                email: email ?? null, 
+                flight: flight ?? null, 
+                arrivalTime: arrivalTime ?? null, 
+                visa: visa ?? null,
+                allegies: allegies ?? null, 
+                smoke, 
+                pet, 
+                kid, 
+                meal: meal ?? null, 
+                note: note ?? null 
+            });
         } else {
             await StudentDetail.create({
                 student_id: student.id,
@@ -164,7 +178,6 @@ router.put('/:id', async(req, res, next) => {
             include: [{ model: StudentDetail }]
         });
         res.json(updated);
-
     } catch (err) {
         next(err);
     } 

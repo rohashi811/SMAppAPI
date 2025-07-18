@@ -29,6 +29,8 @@ module.exports = (sequelize, DataTypes) => {
         get() {
           const start = this.getDataValue('start_date');
           const end = this.getDataValue('end_date');
+          if (!start || !end) return null;
+          if (new Date(end) < new Date(start)) return null; // Ensure end date is after start date
           return Math.floor((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24));
         }
       }
