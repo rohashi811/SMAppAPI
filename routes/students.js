@@ -51,22 +51,21 @@ router.get('/:id', async(req, res, next) => {
                     id: student.agency.id, 
                     name: student.agency.name 
                 } : null,
-            detail: student.detail
-                ? {
-                    jpName:         student.detail.jp_name ?? null,
-                    dateOfBirth:    student.detail.date_of_birth ?? null,
-                    phone:          student.detail.phone_number ?? null,
-                    email:          student.detail.email ?? null,
-                    flight:         student.detail.flight_number ?? null,
-                    arrival_time:   student.detail.arrival_time ?? null,
-                    visa:           student.detail.visa ?? null,
-                    allegies:       student.detail.allegies,
-                    smoke:          student.detail.smoke,
-                    pet:            student.detail.pet,
-                    kid:            student.detail.kid,
-                    meal:           student.detail.meal ?? null,
-                    note:           student.detail.note ?? null,
-                } : null,
+            detail:  {
+                    jp_name:         student.StudentDetail.jp_name ?? null,
+                    dateOfBirth:    student.StudentDetail.date_of_birth ?? null,
+                    phone:          student.StudentDetail.phone_number ?? null,
+                    email:          student.StudentDetail.email ?? null,
+                    flight:         student.StudentDetail.flight_number ?? null,
+                    arrival_time:   student.StudentDetail.arrival_time ?? null,
+                    visa:           student.StudentDetail.visa ?? null,
+                    allegies:       student.StudentDetail.allegies,
+                    smoke:          student.StudentDetail.smoke,
+                    pet:            student.StudentDetail.pet,
+                    kid:            student.StudentDetail.kid,
+                    meal:           student.StudentDetail.meal ?? null,
+                    note:           student.StudentDetail.note ?? null,
+                },
             groups: student.group
                 ? { 
                     id: student.group.id,

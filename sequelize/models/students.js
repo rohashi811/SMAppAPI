@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.VIRTUAL,
         get() {
           const arrival = this.getDataValue('arrival_date');
-          const leaving = this.getDataValue('leaving_date') || new Date();
+          const leaving = this.getDataValue('leaving_date');
           if(!leaving) return null;
           return Math.floor((new Date(leaving) - new Date(arrival)) / (1000 * 60 * 60 * 24));
         }
