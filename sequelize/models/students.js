@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     this.belongsTo(models.School, { foreignKey: 'school_id' });
     this.belongsTo(models.Agency, { foreignKey: 'agency_id' });
     this.hasOne(models.StudentDetail, { foreignKey: 'student_id' });
-    this.hasOne(models.StudentHomestay, { foreignKey: "student_id" });
+    this.hasOne(models.HostAccommodations, { foreignKey: "student_id" });
   }
   }
   Student.init(

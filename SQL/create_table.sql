@@ -67,7 +67,7 @@ CREATE TABLE `Student_Details` (
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `Homestay` (
+CREATE TABLE `Host` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `first_name` VARCHAR(50) NOT NULL,
   `last_name` VARCHAR(50) NOT NULL,
@@ -76,49 +76,87 @@ CREATE TABLE `Homestay` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `Homestay_Details` (
-  `homestay_id` INT NOT NULL,
+CREATE TABLE `Host_Details` (
+  `host_id` INT NOT NULL,
   `email` VARCHAR(100),
   `num_of_room` INT,
   `housemates` TEXT,
   `pet` BOOLEAN DEFAULT FALSE,
   `note` TEXT,
-  PRIMARY KEY (`homestay_id`),
-  CONSTRAINT `fk_homestay_details_homestay`
-    FOREIGN KEY (`homestay_id`) REFERENCES `Homestay`(`id`)
+  PRIMARY KEY (`host_id`),
+  CONSTRAINT `fk_host_details_host`
+    FOREIGN KEY (`host_id`) REFERENCES `Host`(`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `Homestay_Family` (
-  `homestay_id` INT NOT NULL,
+CREATE TABLE `Host_Family` (
+  `host_id` INT NOT NULL,
   `name` VARCHAR(100) NOT NULL,
   `relationship` VARCHAR(50) NOT NULL,
   `phone` VARCHAR(20),
   `date_of_birth` DATE,
-  PRIMARY KEY (`homestay_id`),
-  CONSTRAINT `fk_homestay_family_homestay`
-    FOREIGN KEY (`homestay_id`) REFERENCES `Homestay`(`id`)
+  PRIMARY KEY (`host_id`),
+  CONSTRAINT `fk_host_family_host`
+    FOREIGN KEY (`host_id`) REFERENCES `Host`(`id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `Student_Homestay` (
+-- Not in use -------------------------------------------------
+CREATE TABLE `Student_Host` (
   `student_id` INT NOT NULL,
-  `homestay_id` INT NOT NULL,
+  `host_id` INT NOT NULL,
   `start_date` DATE NOT NULL,
   `end_date` DATE NOT NULL,
   `duration` INT 
     AS (DATEDIFF(`end_date`, `start_date`))
     STORED,
-  PRIMARY KEY (`student_id`, `homestay_id`, `start_date`),
-  INDEX (`homestay_id`),
+  PRIMARY KEY (`student_id`, `host_id`, `start_date`),
+  INDEX (`host_id`),
   CONSTRAINT `fk_sh_student`
     FOREIGN KEY (`student_id`) REFERENCES `Students`(`id`)
       ON UPDATE CASCADE
       ON DELETE CASCADE,
-  CONSTRAINT `fk_sh_homestay`
-    FOREIGN KEY (`homestay_id`) REFERENCES `Homestay`(`id`)
+  CONSTRAINT `fk_sh_host`
+    FOREIGN KEY (`host_id`) REFERENCES `Host`(`id`)
       ON UPDATE CASCADE
       ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+---------------------------------------------------------------
+
+CREATE TABLE `Host_Accommodations` (
+  `host_id`         INT       NOT NULL,
+  `is_rook`         BOOLEAN   NOT NULL DEFAULT FALSE,
+  `student_id`      INT,          
+  `gender`          ENUM('Male','Female','Other') NOT NULL,
+  `nationality`     CHAR(2)   NOT NULL,                                  
+  `start_date`      DATE  NOT NULL,
+  `end_date`        DATE  NULL,
+  `duration` INT 
+    AS (
+        CASE
+          WHEN `end_date` IS NULL THEN NULL
+          ELSE DATEDIFF(`end_date`, `start_date`)
+        END
+        ) STORED,
+  `is_extendable`   BOOLEAN NOT NULL DEFAULT TRUE,
+  `two_weeks_deadline` DATE
+    AS (
+      CASE
+        WHEN is_extendable = TRUE AND end_date IS NOT NULL
+          THEN DATE_SUB(end_date, INTERVAL 14 DAY)
+        ELSE NULL
+      END
+    ) STORED,
+  `created_at`      DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`host_id`, `start_date`),
+  INDEX (`host_id`),
+  INDEX (`student_id`),
+  CONSTRAINT `fk_accom_host`
+    FOREIGN KEY (`host_id`) REFERENCES `Host`(`id`)
+      ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT `fk_accom_student`
+    FOREIGN KEY (`student_id`) REFERENCES `Students`(`id`)
+      ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

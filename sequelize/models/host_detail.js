@@ -1,13 +1,13 @@
 const  { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class HomestayDetail extends Model {
+  class HostDetail extends Model {
   static associate(models) {
-    this.belongsTo(models.Homestay, { foreignKey: 'homestay_id' });
+    this.belongsTo(models.Host, { foreignKey: 'host_id' });
   }
   }
   HomestayDetail.init(
     {
-      homestay_id: { 
+      host_id: { 
           type: DataTypes.INTEGER.UNSIGNED, 
           primaryKey: true 
       },
@@ -30,10 +30,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'HomestayDetail',
-      tableName: 'Homestay_Details',
+      modelName: 'HostDetail',
+      tableName: 'Host_Details',
       timestamps: false,
     }
   );
-  return HomestayDetail;
+  return HostDetail;
 }

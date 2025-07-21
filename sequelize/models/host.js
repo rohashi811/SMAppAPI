@@ -1,13 +1,13 @@
 const  { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Homestay extends Model {
+  class Host extends Model {
     static associate(models) {
-      this.hasOne(models.HomestayDetail, { foreignKey: 'homestay_id' });
-      this.hasMany(models.HomestayFamily, { foreignKey: 'homestay_id' });
-      this.hasOne(models.StudentHomestay, { foreignKey: "student_id" });
+      this.hasOne(models.HostDetail, { foreignKey: 'host_id' });
+      this.hasMany(models.HostFamily, { foreignKey: 'host_id' });
+      this.hasOne(models.HostAccommodations, { foreignKey: "student_id" });
   }
   }
-  Homestay.init(
+  Host.init(
     {
       id: { 
           type: DataTypes.INTEGER.UNSIGNED, 
@@ -33,13 +33,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'Homestay',
-      tableName: 'Homestay',
+      modelName: 'Host',
+      tableName: 'Hosts',
       timestamps: true,
       createdAt: 'created_at',
       updatedAt: false,
     }
   );
 
-  return Homestay;
+  return Host;
 }
