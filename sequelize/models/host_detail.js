@@ -5,34 +5,37 @@ module.exports = (sequelize, DataTypes) => {
     this.belongsTo(models.Host, { foreignKey: 'host_id' });
   }
   }
-  HomestayDetail.init(
+  HostDetail.init(
     {
       host_id: { 
           type: DataTypes.INTEGER.UNSIGNED, 
           primaryKey: true 
       },
       email: { 
-          type: DataTypes.STRING(100), 
+          type: DataTypes.STRING(255), 
           allowNull: true 
       },
       num_of_room: { 
           type: DataTypes.INTEGER, 
-          allowNull: true 
-      },
-      housemates: { 
-          type: DataTypes.TEXT, 
-          allowNull: true 
+          allowNull: true,
+          defaultValue: 1
       },
       pet: { 
           type: DataTypes.BOOLEAN, 
           defaultValue: false 
       },
+      note: { 
+          type: DataTypes.TEXT, 
+          allowNull: true 
+      },
     },
     {
       sequelize,
       modelName: 'HostDetail',
-      tableName: 'Host_Details',
-      timestamps: false,
+      tableName: 'Host_details',
+      timestamps: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
     }
   );
   return HostDetail;

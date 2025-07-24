@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.hasOne(models.HostDetail, { foreignKey: 'host_id' });
       this.hasMany(models.HostFamily, { foreignKey: 'host_id' });
-      this.hasOne(models.HostAccommodations, { foreignKey: "student_id" });
+      this.hasMany(models.AcceptanceSchedule, { foreignKey: "host_id" });
   }
   }
   Host.init(
@@ -15,29 +15,34 @@ module.exports = (sequelize, DataTypes) => {
           primaryKey: true 
       },
       first_name: { 
-          type: DataTypes.STRING(50), 
+          type: DataTypes.STRING(100), 
           allowNull: false 
       },
       last_name: { 
-          type: DataTypes.STRING(50), 
+          type: DataTypes.STRING(100), 
           allowNull: false 
       },
       phone: { 
-          type: DataTypes.STRING(20), 
-          allowNull: false 
+          type: DataTypes.STRING(15), 
+          allowNull: true 
       },
       address: { 
-          type: DataTypes.STRING(255), 
+          type: DataTypes.TEXT, 
           allowNull: false 
+      },
+      status: {
+          type: DataTypes.ENUM('Great', 'Ok', 'NG'),
+          allowNull: false,
+          defaultValue: 'Ok',
       },
     },
     {
       sequelize,
       modelName: 'Host',
-      tableName: 'Hosts',
+      tableName: 'Host',
       timestamps: true,
       createdAt: 'created_at',
-      updatedAt: false,
+      updatedAt: 'updated_at',
     }
   );
 

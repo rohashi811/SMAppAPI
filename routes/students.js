@@ -1,201 +1,29 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const StudentController = require('../controllers/studentController');
 
-const { 
-    School, Agency, Group,
-    Student, StudentDetail
-} = require('../sequelize/models');
+// GET /api/student - 全学生一覧取得（検索・ページネーション対応）
+router.get('/', StudentController.getAllStudents);
 
-router.get('/', async(req, res, next) => {
-    try {
-        const students = await Student.findAll();
-        res.json(students);
-    } catch (err) {
-        next(err);
-    }
-});
+// GET /api/student/:id - 特定の学生詳細取得
+router.get('/:id', StudentController.getStudentById);
 
-router.get('/:id', async(req, res, next) => {
-    try {
-        const { id } = req.params;
-        const student = await Student.findByPk(id, {
-            include: [
-                { model: School  },
-                { model: Agency  },
-                { model: StudentDetail  },
-                { model: Group }
-            ]
-        });
+// POST /api/student - 新規学生作成
+router.post('/', StudentController.createStudent);
 
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
-        }
+// PUT /api/student/:id - 学生情報更新
+router.put('/:id', StudentController.updateStudent);
 
-        const result = {
-            id:           student.id,
-            firstName:    student.first_name,
-            lastName:     student.last_name,
-            arrivalDate:  student.arrival_date,
-            leavingDate:  student.leaving_date,
-            duration:     student.duration_of_stay,
-            gender:       student.gender,
+// DELETE /api/student/:id - 学生削除
+router.delete('/:id', StudentController.deleteStudent);
 
-            // flatten related records as desired:
-            school: student.school 
-                ? { 
-                    id: student.school.id, 
-                    name: student.school.name 
-                } : null,
-            agency: student.agency 
-                ? { 
-                    id: student.agency.id, 
-                    name: student.agency.name 
-                } : null,
-            detail:  {
-                    jp_name:         student.StudentDetail.jp_name ?? null,
-                    dateOfBirth:    student.StudentDetail.date_of_birth ?? null,
-                    phone:          student.StudentDetail.phone_number ?? null,
-                    email:          student.StudentDetail.email ?? null,
-                    flight:         student.StudentDetail.flight_number ?? null,
-                    arrival_time:   student.StudentDetail.arrival_time ?? null,
-                    visa:           student.StudentDetail.visa ?? null,
-                    allegies:       student.StudentDetail.allegies,
-                    smoke:          student.StudentDetail.smoke,
-                    pet:            student.StudentDetail.pet,
-                    kid:            student.StudentDetail.kid,
-                    meal:           student.StudentDetail.meal ?? null,
-                    note:           student.StudentDetail.note ?? null,
-                },
-            groups: student.group
-                ? { 
-                    id: student.group.id,
-                    name: student.group.name,
-                } : null,
+// GET /api/student/:id/detail - 学生詳細情報のみ取得
+router.get('/:id/detail', StudentController.getStudentDetail);
 
-        };
-        res.json(result);
-    } catch (err) {
-        next(err);
-    }
-});
+// PUT /api/student/:id/detail - 学生詳細情報更新
+router.put('/:id/detail', StudentController.updateStudentDetail);
 
-router.post('/', async(req, res, next) => {
-    try {
-        const { 
-            firstName, lastName, arrivalDate, leavingDate, gender, schoolId, agencyId,
-            duration, jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note, groupId
-        } = req.body;  
-        
-        const student = await Student.create({
-            first_name: firstName,
-            last_name: lastName,
-            arrival_date: arrivalDate,
-            leaving_date: leavingDate ?? null,
-            gender: gender,
-            school_id: schoolId ?? null,
-            agency_id: agencyId ?? null,
-            group_id: groupId ?? null,
-        }, { returning: true });
+// GET /api/student/stats - 学生統計情報取得
+router.get('/stats', StudentController.getStudentStats);
 
-        await StudentDetail.create({
-            student_id: student.id,
-            jp_name: jpName ?? null,
-            date_of_birth: dateOfBirth ?? null,
-            phone_number: phone ?? null,
-            email: email ?? null,
-            flight_number: flight ?? null,
-            arrival_time: arrivalTime ?? null,
-            visa: visa ?? null,
-            allegies: allegies ?? null,
-            smoke: smoke,
-            pet: pet,
-            kid: kid,
-            meal: meal ?? null,
-            note: note ?? null,
-        }, { returning: true });
-
-        const created = await Student.findByPk(student.id, {
-            include: [{ model: StudentDetail }]
-        });
-        res.json(created);
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.put('/:id', async(req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { 
-            firstName, lastName, arrivalDate, leavingDate, gender, schoolId, agencyId,
-            jpName, dateOfBirth, phone, email, flight, arrivalTime, visa,allegies, smoke, pet, kid, meal, note, groupId
-        } = req.body; 
-
-        const student = await Student.findByPk(id);
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
-        }
-
-        await student.update({ firstName, lastName, arrivalDate, leavingDate, gender, agencyId, schoolId, groupId });
-
-        const existingDetail = await StudentDetail.findOne({ where: { student_id: id } });
-        if (existingDetail) {
-            await existingDetail.update({ 
-                jpName: jpName ?? null, 
-                dateOfBirth: dateOfBirth ?? null, 
-                phone: phone ?? null, 
-                email: email ?? null, 
-                flight: flight ?? null, 
-                arrivalTime: arrivalTime ?? null, 
-                visa: visa ?? null,
-                allegies: allegies ?? null, 
-                smoke, 
-                pet, 
-                kid, 
-                meal: meal ?? null, 
-                note: note ?? null 
-            });
-        } else {
-            await StudentDetail.create({
-                student_id: student.id,
-                jp_name: jpName ?? null,
-                date_of_birth: dateOfBirth ?? null,
-                phone_number: phone ?? null,
-                email: email ?? null,
-                flight_number: flight ?? null,
-                arrival_time: arrivalTime ?? null,
-                visa: visa ?? null,
-                allegies: allegies ?? null,
-                smoke: smoke,
-                pet: pet,
-                kid: kid,
-                meal: meal ?? null,
-                note: note ?? null,
-            }, { returning: true });
-        }
-
-        const updated = await Student.findByPk(id, {
-            include: [{ model: StudentDetail }]
-        });
-        res.json(updated);
-    } catch (err) {
-        next(err);
-    } 
-});
-
-router.delete('/:id', async(req, res, next) => {
-    try {
-        const { id } = req.params;
-        const student = await Student.findByPk(id);
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
-        }
-
-        await student.destroy();
-        res.status(204).json({ message: 'Student deleted successfully' }).end();
-    } catch (err) {
-        next(err);
-    }
-});
-
-module.exports = router;
+module.exports = router; 

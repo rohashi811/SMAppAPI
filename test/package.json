@@ -1,0 +1,39 @@
+{
+  "name": "smappapi-tests",
+  "version": "1.0.0",
+  "description": "学生管理API テストスイート",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test-post-put-delete.js",
+    "test:detailed": "node test-detailed-results.js",
+    "test:host": "node test-host-crud.js",
+    "test:group": "node test-group-crud.js",
+    "test:agency": "node test-agency-crud.js",
+    "test:school": "node test-school-crud.js",
+    "test:all": "npm run test && npm run test:detailed && npm run test:host && npm run test:group && npm run test:agency && npm run test:school",
+    "test:basic": "node test-post-put-delete.js",
+    "test:detailed-only": "node test-detailed-results.js",
+    "test:host-only": "node test-host-crud.js",
+    "test:group-only": "node test-group-crud.js",
+    "test:agency-only": "node test-agency-crud.js",
+    "test:school-only": "node test-school-crud.js"
+  },
+  "keywords": [
+    "api",
+    "testing",
+    "student",
+    "management",
+    "post",
+    "put",
+    "delete"
+  ],
+  "author": "SMAppAPI Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

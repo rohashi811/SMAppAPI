@@ -2,8 +2,9 @@ var express = require('express');
 var router = express.Router();
 
 router.use('/student',          require('./students'));
-router.use('/homestay',         require('./homestay')); 
-router.use('/student-homestay', require('./student-homestay'));
-
+router.use('/host',             require('./hosts'));
+router.use('/group',            require('./groups'));
+router.use('/agency',           require('./agencies'));
+router.use('/school',           require('./schools'));
 
 module.exports = router;

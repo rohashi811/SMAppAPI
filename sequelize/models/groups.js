@@ -14,15 +14,17 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
       name: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(255),
         allowNull: false,
       },
     },
     {
       sequelize,
       modelName: 'Group',
-      tableName: 'Groups',
-      timestamps: false,
+      tableName: 'StudentGroups',
+      timestamps: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
     }
   );
   return Group;

@@ -13,11 +13,11 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
       name: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(255),
         allowNull: false,
       },
       category: {
-        type: DataTypes.ENUM('Language', 'Secondary', 'College', 'University', 'Graduate'),
+        type: DataTypes.ENUM('language', 'secondary', 'college', 'university'),
         allowNull: false,
       },
     },
@@ -25,7 +25,9 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'School',
       tableName: 'Schools',
-      timestamps: false,
+      timestamps: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
     }
   );
   return School;
