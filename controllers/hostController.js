@@ -1,4 +1,4 @@
-const { Host, HostDetail, HostFamily, AcceptanceSchedule } = require('../sequelize/models');
+const { Host, HostDetail, HostFamily, AcceptanceSchedule, Student } = require('../sequelize/models');
 const { Op } = require('sequelize');
 
 class HostController {
@@ -573,6 +573,593 @@ class HostController {
       res.status(500).json({
         success: false,
         message: '統計情報の取得に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 特定の日付の滞在者数取得
+  static async getOccupancyByDate(req, res) {
+    try {
+      const { date, host_id } = req.query;
+      
+      if (!date) {
+        return res.status(400).json({
+          success: false,
+          message: '日付パラメータ（date）が必要です'
+        });
+      }
+
+      // 日付形式の検証
+      const targetDate = new Date(date);
+      if (isNaN(targetDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: '有効な日付形式で指定してください（YYYY-MM-DD）'
+        });
+      }
+
+      const whereClause = {
+        start_date: { [Op.lte]: date },
+        end_date: { [Op.gte]: date }
+      };
+
+      // 特定のホストが指定されている場合
+      if (host_id) {
+        whereClause.host_id = host_id;
+      }
+
+      // 指定日付に滞在しているスケジュールを取得
+      const schedules = await AcceptanceSchedule.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Host,
+            attributes: ['id', 'first_name', 'last_name', 'address']
+          },
+          {
+            model: Student,
+            attributes: ['id', 'first_name', 'last_name', 'gender'],
+            required: false
+          }
+        ]
+      });
+
+      // ホスト別の滞在者数を集計
+      const occupancyByHost = {};
+      let totalOccupancy = 0;
+
+      schedules.forEach(schedule => {
+        const hostId = schedule.host_id;
+        const hostName = `${schedule.Host.first_name} ${schedule.Host.last_name}`;
+        
+        if (!occupancyByHost[hostId]) {
+          occupancyByHost[hostId] = {
+            host_id: hostId,
+            host_name: hostName,
+            address: schedule.Host.address,
+            occupancy_count: 0,
+            schedules: []
+          };
+        }
+
+        occupancyByHost[hostId].occupancy_count++;
+        occupancyByHost[hostId].schedules.push({
+          id: schedule.id,
+          start_date: schedule.start_date,
+          end_date: schedule.end_date,
+          is_rook: schedule.is_rook,
+          student_name: schedule.Student ? `${schedule.Student.first_name} ${schedule.Student.last_name}` : null,
+          gender: schedule.gender,
+          nationality: schedule.nationality
+        });
+
+        totalOccupancy++;
+      });
+
+      const result = {
+        date: date,
+        total_occupancy: totalOccupancy,
+        host_count: Object.keys(occupancyByHost).length,
+        occupancy_by_host: Object.values(occupancyByHost)
+      };
+
+      // 特定のホストが指定されている場合は、そのホストの情報のみ返す
+      if (host_id) {
+        const hostOccupancy = occupancyByHost[host_id];
+        if (hostOccupancy) {
+          res.json({
+            success: true,
+            data: {
+              date: date,
+              host_id: parseInt(host_id),
+              host_name: hostOccupancy.host_name,
+              address: hostOccupancy.address,
+              occupancy_count: hostOccupancy.occupancy_count,
+              schedules: hostOccupancy.schedules
+            }
+          });
+        } else {
+          res.json({
+            success: true,
+            data: {
+              date: date,
+              host_id: parseInt(host_id),
+              occupancy_count: 0,
+              schedules: []
+            }
+          });
+        }
+      } else {
+        res.json({
+          success: true,
+          data: result
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching occupancy by date:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在者数の取得に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 日付範囲での滞在者数取得
+  static async getOccupancyByDateRange(req, res) {
+    try {
+      const { start_date, end_date, host_id } = req.query;
+      
+      if (!start_date || !end_date) {
+        return res.status(400).json({
+          success: false,
+          message: '開始日（start_date）と終了日（end_date）パラメータが必要です'
+        });
+      }
+
+      // 日付形式の検証
+      const startDate = new Date(start_date);
+      const endDate = new Date(end_date);
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: '有効な日付形式で指定してください（YYYY-MM-DD）'
+        });
+      }
+
+      if (startDate > endDate) {
+        return res.status(400).json({
+          success: false,
+          message: '開始日は終了日より前である必要があります'
+        });
+      }
+
+      const whereClause = {
+        [Op.or]: [
+          {
+            start_date: { [Op.lte]: end_date },
+            end_date: { [Op.gte]: start_date }
+          }
+        ]
+      };
+
+      // 特定のホストが指定されている場合
+      if (host_id) {
+        whereClause.host_id = host_id;
+      }
+
+      // 指定期間に滞在しているスケジュールを取得
+      const schedules = await AcceptanceSchedule.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: Host,
+            attributes: ['id', 'first_name', 'last_name', 'address']
+          },
+          {
+            model: Student,
+            attributes: ['id', 'first_name', 'last_name', 'gender'],
+            required: false
+          }
+        ],
+        order: [['start_date', 'ASC']]
+      });
+
+      // 日付別の滞在者数を集計
+      const occupancyByDate = {};
+      const hostOccupancy = {};
+
+      schedules.forEach(schedule => {
+        const hostId = schedule.host_id;
+        const hostName = `${schedule.Host.first_name} ${schedule.Host.last_name}`;
+        
+        // ホスト別集計
+        if (!hostOccupancy[hostId]) {
+          hostOccupancy[hostId] = {
+            host_id: hostId,
+            host_name: hostName,
+            address: schedule.Host.address,
+            total_days: 0,
+            schedules: []
+          };
+        }
+
+        // 滞在期間の各日を処理
+        const currentDate = new Date(schedule.start_date);
+        const endDate = new Date(schedule.end_date);
+        
+        while (currentDate <= endDate) {
+          const dateStr = currentDate.toISOString().split('T')[0];
+          
+          if (dateStr >= start_date && dateStr <= end_date) {
+            if (!occupancyByDate[dateStr]) {
+              occupancyByDate[dateStr] = {
+                date: dateStr,
+                total_occupancy: 0,
+                host_count: 0,
+                hosts: {}
+              };
+            }
+
+            if (!occupancyByDate[dateStr].hosts[hostId]) {
+              occupancyByDate[dateStr].hosts[hostId] = {
+                host_id: hostId,
+                host_name: hostName,
+                occupancy_count: 0
+              };
+              occupancyByDate[dateStr].host_count++;
+            }
+
+            occupancyByDate[dateStr].hosts[hostId].occupancy_count++;
+            occupancyByDate[dateStr].total_occupancy++;
+            hostOccupancy[hostId].total_days++;
+          }
+
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        hostOccupancy[hostId].schedules.push({
+          id: schedule.id,
+          start_date: schedule.start_date,
+          end_date: schedule.end_date,
+          is_rook: schedule.is_rook,
+          student_name: schedule.Student ? `${schedule.Student.first_name} ${schedule.Student.last_name}` : null,
+          gender: schedule.gender,
+          nationality: schedule.nationality
+        });
+      });
+
+      const result = {
+        period: {
+          start_date: start_date,
+          end_date: end_date
+        },
+        daily_occupancy: Object.values(occupancyByDate).sort((a, b) => a.date.localeCompare(b.date)),
+        host_summary: Object.values(hostOccupancy)
+      };
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('Error fetching occupancy by date range:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在者数の取得に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 滞在スケジュール作成
+  static async createAcceptanceSchedule(req, res) {
+    try {
+      const {
+        host_id,
+        start_date,
+        end_date,
+        is_rook = true,
+        is_extendable = false,
+        student_id,
+        gender,
+        nationality
+      } = req.body;
+
+      // 必須フィールドのバリデーション
+      if (!host_id || !start_date || !end_date) {
+        return res.status(400).json({
+          success: false,
+          message: 'host_id、start_date、end_dateは必須です'
+        });
+      }
+
+      // ホストが存在するかチェック
+      const host = await Host.findByPk(host_id);
+      if (!host) {
+        return res.status(404).json({
+          success: false,
+          message: '指定されたホストが見つかりません'
+        });
+      }
+
+      // 学生が指定されている場合、学生が存在するかチェック
+      if (student_id) {
+        const student = await Student.findByPk(student_id);
+        if (!student) {
+          return res.status(404).json({
+            success: false,
+            message: '指定された学生が見つかりません'
+          });
+        }
+      }
+
+      // スケジュールを作成
+      const schedule = await AcceptanceSchedule.create({
+        host_id,
+        start_date,
+        end_date,
+        is_rook,
+        is_extendable,
+        student_id,
+        gender,
+        nationality
+      });
+
+      // 作成されたスケジュールを取得（関連データ含む）
+      const createdSchedule = await AcceptanceSchedule.findByPk(schedule.id, {
+        include: [
+          {
+            model: Host,
+            attributes: ['id', 'first_name', 'last_name', 'address']
+          },
+          {
+            model: Student,
+            attributes: ['id', 'first_name', 'last_name', 'gender'],
+            required: false
+          }
+        ]
+      });
+
+      res.status(201).json({
+        success: true,
+        message: '滞在スケジュールが正常に作成されました',
+        data: createdSchedule
+      });
+    } catch (error) {
+      console.error('Error creating acceptance schedule:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在スケジュールの作成に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 滞在スケジュール更新
+  static async updateAcceptanceSchedule(req, res) {
+    try {
+      const scheduleId = req.params.id;
+      const updateData = req.body;
+
+      // スケジュールが存在するかチェック
+      const existingSchedule = await AcceptanceSchedule.findByPk(scheduleId);
+      if (!existingSchedule) {
+        return res.status(404).json({
+          success: false,
+          message: '指定された滞在スケジュールが見つかりません'
+        });
+      }
+
+      // ホストが指定されている場合、ホストが存在するかチェック
+      if (updateData.host_id) {
+        const host = await Host.findByPk(updateData.host_id);
+        if (!host) {
+          return res.status(404).json({
+            success: false,
+            message: '指定されたホストが見つかりません'
+          });
+        }
+      }
+
+      // 学生が指定されている場合、学生が存在するかチェック
+      if (updateData.student_id) {
+        const student = await Student.findByPk(updateData.student_id);
+        if (!student) {
+          return res.status(404).json({
+            success: false,
+            message: '指定された学生が見つかりません'
+          });
+        }
+      }
+
+      // スケジュールを更新
+      await existingSchedule.update(updateData);
+
+      // 更新されたスケジュールを取得
+      const updatedSchedule = await AcceptanceSchedule.findByPk(scheduleId, {
+        include: [
+          {
+            model: Host,
+            attributes: ['id', 'first_name', 'last_name', 'address']
+          },
+          {
+            model: Student,
+            attributes: ['id', 'first_name', 'last_name', 'gender'],
+            required: false
+          }
+        ]
+      });
+
+      res.json({
+        success: true,
+        message: '滞在スケジュールが正常に更新されました',
+        data: updatedSchedule
+      });
+    } catch (error) {
+      console.error('Error updating acceptance schedule:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在スケジュールの更新に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 滞在スケジュール削除
+  static async deleteAcceptanceSchedule(req, res) {
+    try {
+      const scheduleId = req.params.id;
+
+      // スケジュールが存在するかチェック
+      const schedule = await AcceptanceSchedule.findByPk(scheduleId);
+      if (!schedule) {
+        return res.status(404).json({
+          success: false,
+          message: '指定された滞在スケジュールが見つかりません'
+        });
+      }
+
+      // スケジュールを削除
+      await schedule.destroy();
+
+      res.json({
+        success: true,
+        message: '滞在スケジュールが正常に削除されました'
+      });
+    } catch (error) {
+      console.error('Error deleting acceptance schedule:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在スケジュールの削除に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 滞在スケジュール一覧取得
+  static async getAcceptanceSchedules(req, res) {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        host_id,
+        student_id,
+        start_date,
+        end_date,
+        is_rook
+      } = req.query;
+
+      // 検索条件の構築
+      const whereClause = {};
+      const includeClause = [
+        {
+          model: Host,
+          attributes: ['id', 'first_name', 'last_name', 'address']
+        },
+        {
+          model: Student,
+          attributes: ['id', 'first_name', 'last_name', 'gender'],
+          required: false
+        }
+      ];
+
+      // フィルター条件
+      if (host_id) whereClause.host_id = host_id;
+      if (student_id) whereClause.student_id = student_id;
+      if (is_rook !== undefined) whereClause.is_rook = is_rook === 'true';
+
+      // 日付範囲フィルター
+      if (start_date || end_date) {
+        if (start_date && end_date) {
+          whereClause[Op.or] = [
+            {
+              start_date: { [Op.lte]: end_date },
+              end_date: { [Op.gte]: start_date }
+            }
+          ];
+        } else if (start_date) {
+          whereClause.end_date = { [Op.gte]: start_date };
+        } else if (end_date) {
+          whereClause.start_date = { [Op.lte]: end_date };
+        }
+      }
+
+      // ページネーション設定
+      const offset = (page - 1) * limit;
+      const limitNum = parseInt(limit);
+
+      // データ取得
+      const { count, rows: schedules } = await AcceptanceSchedule.findAndCountAll({
+        where: whereClause,
+        include: includeClause,
+        order: [['start_date', 'ASC']],
+        limit: limitNum,
+        offset: offset
+      });
+
+      // ページネーション情報
+      const totalPages = Math.ceil(count / limitNum);
+      const hasNextPage = page < totalPages;
+      const hasPrevPage = page > 1;
+
+      res.json({
+        success: true,
+        data: schedules,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages,
+          totalCount: count,
+          hasNextPage,
+          hasPrevPage,
+          limit: limitNum
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching acceptance schedules:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在スケジュールの取得に失敗しました',
+        error: error.message
+      });
+    }
+  }
+
+  // 特定の滞在スケジュール取得
+  static async getAcceptanceScheduleById(req, res) {
+    try {
+      const scheduleId = req.params.id;
+      const schedule = await AcceptanceSchedule.findByPk(scheduleId, {
+        include: [
+          {
+            model: Host,
+            attributes: ['id', 'first_name', 'last_name', 'address']
+          },
+          {
+            model: Student,
+            attributes: ['id', 'first_name', 'last_name', 'gender'],
+            required: false
+          }
+        ]
+      });
+
+      if (!schedule) {
+        return res.status(404).json({
+          success: false,
+          message: '指定された滞在スケジュールが見つかりません'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: schedule
+      });
+    } catch (error) {
+      console.error('Error fetching acceptance schedule:', error);
+      res.status(500).json({
+        success: false,
+        message: '滞在スケジュールの取得に失敗しました',
         error: error.message
       });
     }

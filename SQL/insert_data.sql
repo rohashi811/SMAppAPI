@@ -71,14 +71,14 @@ INSERT INTO Students (first_name, last_name, arrival_date, leaving_date, gender,
 
 -- Student_detailsテーブルにサンプルデータ挿入
 INSERT INTO Student_details (student_id, jp_name, date_of_birth, phone_number, email, flight_number, arrival_time, visa, allergies, smoke, pet, kid, meal, emergency_contact, emergency_contact_relation, emergency_phone, passport_number, note) VALUES
-(1, '田中 雪', '2005-04-10', '+81-90-1234-5678', 'yuki.tanaka@email.com', 'AC001', '2024-07-01 14:30:00', 'Student', 'Peanuts', FALSE, FALSE, FALSE, 'No restrictions', '田中 太郎', 'Father', '+81-90-1234-5679', 'TR1234567', 'First time abroad'),
-(2, '佐藤 健二', '2004-08-15', '+81-90-1234-5680', 'kenji.sato@email.com', 'AC002', '2024-07-01 15:45:00', 'Student', NULL, FALSE, FALSE, FALSE, 'Vegetarian', '佐藤 美子', 'Mother', '+81-90-1234-5681', 'TR1234568', 'Loves sports'),
-(3, '山本 愛子', '2003-12-20', '+81-90-1234-5682', 'aiko.yamamoto@email.com', 'AC003', '2024-07-15 10:20:00', 'Student', 'Shellfish', FALSE, FALSE, FALSE, 'No restrictions', '山本 一郎', 'Father', '+81-90-1234-5683', 'TR1234569', 'Art student'),
-(4, '中村 太郎', '2002-06-05', '+81-90-1234-5684', 'taro.nakamura@email.com', 'AC004', '2024-08-01 16:15:00', 'Student', NULL, FALSE, FALSE, FALSE, 'No restrictions', '中村 花子', 'Mother', '+81-90-1234-5685', 'TR1234570', 'Business major'),
-(5, '渡辺 美香', '2001-03-12', '+81-90-1234-5686', 'mika.watanabe@email.com', 'AC005', '2024-09-01 12:00:00', 'Student', 'Dairy', FALSE, FALSE, FALSE, 'Lactose intolerant', '渡辺 正男', 'Father', '+81-90-1234-5687', 'TR1234571', 'Long-term study'),
-(6, '伊藤 博志', '2000-11-08', '+81-90-1234-5688', 'hiroshi.ito@email.com', 'AC006', '2024-10-01 13:30:00', 'Student', NULL, FALSE, FALSE, FALSE, 'No restrictions', '伊藤 恵子', 'Mother', '+81-90-1234-5689', 'TR1234572', 'Engineering student'),
-(7, '小林 由美', '2004-01-25', '+81-90-1234-5690', 'yumi.kobayashi@email.com', 'AC007', '2024-11-01 11:45:00', 'Student', 'Gluten', FALSE, FALSE, FALSE, 'Gluten-free', '小林 健一', 'Father', '+81-90-1234-5691', 'TR1234573', 'Short-term program'),
-(8, '鈴木 和樹', '2003-07-18', '+81-90-1234-5692', 'kazuki.suzuki@email.com', 'AC008', '2024-12-01 14:20:00', 'Student', NULL, FALSE, FALSE, FALSE, 'No restrictions', '鈴木 雅子', 'Mother', '+1-90-1234-5693', 'TR1234574', 'Winter program');
+(1, '田中 雪', '2005-04-10', '090-1234-5678', 'yuki.tanaka@email.com', 'AC001', '2024-07-01 14:30:00', 'Student', 'Peanuts', FALSE, FALSE, FALSE, 'No restrictions', '田中 太郎', 'Father', '090-1234-5679', 'TR1234567', 'First time abroad'),
+(2, '佐藤 健二', '2004-08-15', '090-1234-5680', 'kenji.sato@email.com', 'AC002', '2024-07-01 15:45:00', 'Student', NULL, FALSE, FALSE, FALSE, 'Vegetarian', '佐藤 美子', 'Mother', '090-1234-5681', 'TR1234568', 'Loves sports'),
+(3, '山本 愛子', '2003-12-20', '090-1234-5682', 'aiko.yamamoto@email.com', 'AC003', '2024-07-15 10:20:00', 'Student', 'Shellfish', FALSE, FALSE, FALSE, 'No restrictions', '山本 一郎', 'Father', '090-1234-5683', 'TR1234569', 'Art student'),
+(4, '中村 太郎', '2002-06-05', '090-1234-5684', 'taro.nakamura@email.com', 'AC004', '2024-08-01 16:15:00', 'Student', NULL, FALSE, FALSE, FALSE, 'No restrictions', '中村 花子', 'Mother', '090-1234-5685', 'TR1234570', 'Business major'),
+(5, '渡辺 美香', '2001-03-12', '090-1234-5686', 'mika.watanabe@email.com', 'AC005', '2024-09-01 12:00:00', 'Student', 'Dairy', FALSE, FALSE, FALSE, 'Lactose intolerant', '渡辺 正男', 'Father', '090-1234-5687', 'TR1234571', 'Long-term study'),
+(6, '伊藤 博志', '2000-11-08', '090-1234-5688', 'hiroshi.ito@email.com', 'AC006', '2024-10-01 13:30:00', 'Student', NULL, FALSE, FALSE, FALSE, 'No restrictions', '伊藤 恵子', 'Mother', '090-1234-5689', 'TR1234572', 'Engineering student'),
+(7, '小林 由美', '2004-01-25', '090-1234-5690', 'yumi.kobayashi@email.com', 'AC007', '2024-11-01 11:45:00', 'Student', 'Gluten', FALSE, FALSE, FALSE, 'Gluten-free', '小林 健一', 'Father', '090-1234-5691', 'TR1234573', 'Short-term program'),
+(8, '鈴木 和樹', '2003-07-18', '090-1234-5692', 'kazuki.suzuki@email.com', 'AC008', '2024-12-01 14:20:00', 'Student', NULL, FALSE, FALSE, FALSE, 'No restrictions', '鈴木 雅子', 'Mother', '090-1234-5693', 'TR1234574', 'Winter program');
 
 -- Acceptance_scheduleテーブルにサンプルデータ挿入
 INSERT INTO Acceptance_schedule (host_id, start_date, end_date, is_rook, is_extendable, student_id, gender, nationality) VALUES

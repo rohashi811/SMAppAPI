@@ -8,6 +8,27 @@ router.get('/', HostController.getAllHosts);
 // GET /api/host/stats - ホスト統計情報取得
 router.get('/stats', HostController.getHostStats);
 
+// GET /api/host/occupancy - 特定の日付の滞在者数取得
+router.get('/occupancy', HostController.getOccupancyByDate);
+
+// GET /api/host/occupancy/range - 日付範囲での滞在者数取得
+router.get('/occupancy/range', HostController.getOccupancyByDateRange);
+
+// GET /api/host/schedules - 滞在スケジュール一覧取得
+router.get('/schedules', HostController.getAcceptanceSchedules);
+
+// POST /api/host/schedules - 滞在スケジュール作成
+router.post('/schedules', HostController.createAcceptanceSchedule);
+
+// GET /api/host/schedules/:id - 特定の滞在スケジュール取得
+router.get('/schedules/:id', HostController.getAcceptanceScheduleById);
+
+// PUT /api/host/schedules/:id - 滞在スケジュール更新
+router.put('/schedules/:id', HostController.updateAcceptanceSchedule);
+
+// DELETE /api/host/schedules/:id - 滞在スケジュール削除
+router.delete('/schedules/:id', HostController.deleteAcceptanceSchedule);
+
 // GET /api/host/:id - 特定のホスト詳細取得
 router.get('/:id', HostController.getHostById);
 
