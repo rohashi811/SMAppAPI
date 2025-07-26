@@ -4,7 +4,16 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "nodemon ./bin/www",
+    "pm2:start": "pm2 start app.js --name smappapi",
+    "pm2:stop": "pm2 stop smappapi",
+    "pm2:restart": "pm2 restart smappapi",
+    "pm2:status": "pm2 list",
+    "pm2:logs": "pm2 logs smappapi",
+    "pm2:monit": "pm2 monit",
+    "pm2:delete": "pm2 delete smappapi",
+    "pm2:save": "pm2 save",
+    "pm2:resurrect": "pm2 resurrect"
   },
   "dependencies": {
     "axios": "^1.11.0",
